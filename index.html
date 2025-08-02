@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Defender - Enhanced Edition</title>
+    <title>Cosmic Defender - Mobile Enhanced Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -223,6 +223,19 @@
             transform: scale(0.95);
         }
 
+        .gyro-indicator {
+            position: absolute;
+            top: 15px;
+            right: 200px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-size: 14px;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .mobile-controls { display: flex; }
             .logo { font-size: 2.5rem; }
@@ -243,6 +256,8 @@
             display: none;
             backdrop-filter: blur(10px);
             z-index: 100;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal h2 {
@@ -281,6 +296,53 @@
             display: none;
         }
 
+        .settings-section {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .settings-section h3 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 8px;
+        }
+
+        .slider {
+            width: 150px;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+            border: none;
+        }
+
         .particle {
             position: absolute;
             pointer-events: none;
@@ -301,7 +363,7 @@
     <!-- Front Page -->
     <div id="frontPage">
         <div class="logo">COSMIC DEFENDER</div>
-        <div class="subtitle">Enhanced Edition</div>
+        <div class="subtitle">Mobile Enhanced Edition</div>
         
         <div class="menu-buttons">
             <button class="menu-btn" onclick="startGame()">🚀 START MISSION</button>
@@ -311,8 +373,8 @@
 
         <div class="features">
             <div class="feature">🎮 Cross-Platform</div>
-            <div class="feature">🎵 Sound Effects</div>
-            <div class="feature">⚡ Power-ups</div>
+            <div class="feature">📱 Gyroscope</div>
+            <div class="feature">📳 Haptic Feedback</div>
             <div class="feature">🌟 Enhanced Graphics</div>
         </div>
     </div>
@@ -344,6 +406,10 @@
 
         <div class="powerup-indicator" id="powerupIndicator">
             Shield Active: <span id="powerupTimer">0</span>s
+        </div>
+
+        <div class="gyro-indicator" id="gyroIndicator">
+            🎯 Gyro Active
         </div>
 
         <button id="pauseBtn" onclick="togglePause()">⏸️ PAUSE</button>
@@ -382,22 +448,56 @@
                 <p><strong>Controls:</strong></p>
                 <p>• Arrow Keys / Touch: Move ship</p>
                 <p>• Spacebar / Fire Button: Primary weapon</p>
-                <p>• Shift / Special Button: Energy blast</p><br>
+                <p>• Shift / Special Button: Energy blast</p>
+                <p>• 📱 Tilt Device: Gyroscope control (when enabled)</p><br>
                 <p><strong>Power-ups:</strong></p>
                 <p>🛡️ Shield - Temporary invincibility</p>
                 <p>⚡ Rapid Fire - Increased fire rate</p>
                 <p>💊 Health Pack - Restore health</p>
-                <p>🔋 Energy Boost - Restore energy</p>
+                <p>🔋 Energy Boost - Restore energy</p><br>
+                <p><strong>Mobile Features:</strong></p>
+                <p>📳 Haptic feedback on damage/powerups</p>
+                <p>🎯 Optional gyroscope controls</p>
             </div>
             <button class="modal-btn" onclick="closeInstructions()">✅ Understood</button>
         </div>
 
         <div class="modal" id="settingsModal">
             <h2>Mission Settings</h2>
-            <div style="margin: 20px 0;">
-                <p>Sound Effects: <button class="modal-btn" id="soundToggle" onclick="toggleSound()">ON</button></p>
-                <p>Difficulty: <button class="modal-btn" id="difficultyBtn" onclick="toggleDifficulty()">NORMAL</button></p>
+            
+            <div class="settings-section">
+                <h3>🔊 Audio Settings</h3>
+                <div class="setting-item">
+                    <span>Sound Effects:</span>
+                    <button class="modal-btn" id="soundToggle" onclick="toggleSound()">ON</button>
+                </div>
             </div>
+
+            <div class="settings-section">
+                <h3>🎮 Game Settings</h3>
+                <div class="setting-item">
+                    <span>Difficulty:</span>
+                    <button class="modal-btn" id="difficultyBtn" onclick="toggleDifficulty()">NORMAL</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>📱 Mobile Settings</h3>
+                <div class="setting-item">
+                    <span>Gyroscope Controls:</span>
+                    <button class="modal-btn" id="gyroToggle" onclick="toggleGyroscope()">OFF</button>
+                </div>
+                <div class="setting-item">
+                    <span>Gyro Sensitivity:</span>
+                    <input type="range" class="slider" id="gyroSensitivity" min="1" max="10" value="5">
+                    <span id="gyroSensitivityValue">5</span>
+                </div>
+                <div class="setting-item">
+                    <span>Haptic Feedback:</span>
+                    <button class="modal-btn" id="hapticToggle" onclick="toggleHaptic()">ON</button>
+                </div>
+            </div>
+
             <button class="modal-btn" onclick="closeSettings()">✅ Apply</button>
         </div>
     </div>
@@ -412,46 +512,157 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-// Add this at the top
-let starLayers = [];
+        // Mobile-specific settings
+        let gyroscopeEnabled = false;
+        let gyroscopeSensitivity = 5;
+        let hapticEnabled = true;
+        let gyroscopeData = { x: 0, y: 0, z: 0 };
+        let deviceOrientationPermission = false;
 
-function initStars() {
-    starLayers = [];
-    for (let i = 0; i < 3; i++) {
-        let stars = [];
-        for (let j = 0; j < 100; j++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                speed: (i + 1) * 0.3,
-                size: Math.random() * (i + 1),
-                alpha: 0.2 + Math.random() * 0.5
+        // Add this at the top
+        let starLayers = [];
+
+        function initStars() {
+            starLayers = [];
+            for (let i = 0; i < 3; i++) {
+                let stars = [];
+                for (let j = 0; j < 100; j++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        speed: (i + 1) * 0.3,
+                        size: Math.random() * (i + 1),
+                        alpha: 0.2 + Math.random() * 0.5
+                    });
+                }
+                starLayers.push(stars);
+            }
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            starLayers.forEach(layer => {
+                layer.forEach(star => {
+                    star.y += star.speed;
+                    if (star.y > canvas.height) {
+                        star.y = 0;
+                        star.x = Math.random() * canvas.width;
+                    }
+
+                    ctx.fillStyle = `rgba(255,255,255,${star.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
             });
         }
-        starLayers.push(stars);
-    }
-}
 
-function drawBackground() {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    starLayers.forEach(layer => {
-        layer.forEach(star => {
-            star.y += star.speed;
-            if (star.y > canvas.height) {
-                star.y = 0;
-                star.x = Math.random() * canvas.width;
+        // Haptic feedback functions
+        function triggerHaptic(pattern = [100]) {
+            if (hapticEnabled && navigator.vibrate) {
+                navigator.vibrate(pattern);
             }
+        }
 
-            ctx.fillStyle = `rgba(255,255,255,${star.alpha})`;
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-            ctx.fill();
-        });
-    });
-}
+        function hapticDamage() {
+            triggerHaptic([200, 100, 200]); // Strong vibration for damage
+        }
 
+        function hapticPowerup() {
+            triggerHaptic([50, 50, 50]); // Light vibration for powerup
+        }
+
+        function hapticShoot() {
+            triggerHaptic([20]); // Very light vibration for shooting
+        }
+
+        function hapticEnemyKill() {
+            triggerHaptic([100]); // Medium vibration for enemy kill
+        }
+
+        // Gyroscope functions
+        async function requestGyroscopePermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    deviceOrientationPermission = permission === 'granted';
+                    return deviceOrientationPermission;
+                } catch (error) {
+                    console.error('Error requesting gyroscope permission:', error);
+                    return false;
+                }
+            } else {
+                // For non-iOS devices, assume permission is granted
+                deviceOrientationPermission = true;
+                return true;
+            }
+        }
+
+        function initGyroscope() {
+            if (!gyroscopeEnabled) return;
+
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', handleOrientation, true);
+            } else {
+                console.log('Device orientation not supported');
+            }
+        }
+
+        function handleOrientation(event) {
+            if (!gyroscopeEnabled || !gameRunning || gamePaused) return;
+
+            // Get the tilt values
+            const tiltLR = event.gamma; // Left-right tilt in degrees [-90, 90]
+            const tiltFB = event.beta;  // Front-back tilt in degrees [-180, 180]
+
+            // Use left-right tilt for ship movement
+            if (tiltLR !== null) {
+                // Normalize and apply sensitivity
+                const normalizedTilt = tiltLR / 45; // Normalize to [-2, 2] range
+                const movement = normalizedTilt * (gyroscopeSensitivity / 5) * player.speed;
+                
+                // Apply movement with bounds checking
+                const newX = player.x + movement;
+                if (newX >= 0 && newX <= canvas.width - player.width) {
+                    player.x = newX;
+                }
+            }
+        }
+
+        function stopGyroscope() {
+            window.removeEventListener('deviceorientation', handleOrientation, true);
+        }
+
+        async function toggleGyroscope() {
+            if (!gyroscopeEnabled) {
+                const permitted = await requestGyroscopePermission();
+                if (permitted) {
+                    gyroscopeEnabled = true;
+                    initGyroscope();
+                    document.getElementById('gyroToggle').innerText = 'ON';
+                    document.getElementById('gyroIndicator').style.display = 'block';
+                } else {
+                    alert('Gyroscope permission denied. Please enable it in your browser settings.');
+                }
+            } else {
+                gyroscopeEnabled = false;
+                stopGyroscope();
+                document.getElementById('gyroToggle').innerText = 'OFF';
+                document.getElementById('gyroIndicator').style.display = 'none';
+            }
+        }
+
+        function toggleHaptic() {
+            hapticEnabled = !hapticEnabled;
+            document.getElementById('hapticToggle').innerText = hapticEnabled ? 'ON' : 'OFF';
+            
+            // Test haptic feedback
+            if (hapticEnabled) {
+                triggerHaptic([50]);
+            }
+        }
 
         // Game settings
         let soundEnabled = true;
@@ -473,10 +684,13 @@ function drawBackground() {
         let bossMaxHealth = 100;
         let activePowerUps = [];
         let objectives = [
-    { text: "Survive 60s", complete: false, condition: () => gameTime > 60 },
-    { text: "Collect 3 power-ups", complete: false, condition: () => powerUpsCollected >= 3 },
-];          
+            { text: "Survive 60s", complete: false, condition: () => gameTime > 60 },
+            { text: "Collect 3 power-ups", complete: false, condition: () => powerUpsCollected >= 3 },
+        ];          
         let difficultyTimer = 0;
+        let gameTime = 0;
+        let powerUpsCollected = 0;
+
         // Enhanced player object
         const player = {
             x: canvas.width / 2 - 25,
@@ -511,71 +725,6 @@ function drawBackground() {
         };
 
         // Audio context for sound effects
-      
-
-function spawnBoss() {
-    boss = {
-        x: canvas.width / 2 - 40,
-        y: -100,
-        width: 80,
-        height: 80,
-        speed: 1,
-        health: bossHealth
-    };
-    bossActive = true;
-}
-
-function drawBoss(ctx) {
-    if (!boss) return;
-
-    ctx.fillStyle = "darkred";
-    ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
-
-    // Health Bar
-    ctx.fillStyle = "black";
-    ctx.fillRect(20, 20, canvas.width - 40, 10);
-    ctx.fillStyle = "red";
-    ctx.fillRect(20, 20, (canvas.width - 40) * (boss.health / bossMaxHealth), 10);
-}
-
-function updateBoss() {
-    if (!boss) return;
-    boss.y += boss.speed;
-
-    // Collision with bullets
-    bullets.forEach((b, i) => {
-        if (
-            b.x < boss.x + boss.width &&
-            b.x + b.width > boss.x &&
-            b.y < boss.y + boss.height &&
-            b.y + b.height > boss.y
-        ) {
-            boss.health -= 5;
-            bullets.splice(i, 1);
-        }
-    });
-
-    if (boss.health <= 0) {
-        boss = null;
-        bossActive = false;
-        wave++; // Move to next wave
-    }
-}
-    let waveFlashTimer = 0;
-
-function triggerWaveFlash() {
-    waveFlashTimer = 30;
-}
-
-function drawWaveFlash() {
-    if (waveFlashTimer > 0) {
-        ctx.fillStyle = `rgba(255,255,255,${waveFlashTimer / 30})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        waveFlashTimer--;
-    }
-}
-
-        
         let audioContext;
         
         function initAudio() {
@@ -603,20 +752,6 @@ function drawWaveFlash() {
             oscillator.stop(audioContext.currentTime + duration);
         }
 
-        // Initialize stars
-        function initStars() {
-            stars.length = 0;
-            for (let i = 0; i < 150; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    speed: Math.random() * 3 + 0.5,
-                    size: Math.random() * 3 + 1,
-                    brightness: Math.random() * 0.8 + 0.2
-                });
-            }
-        }
-
         // Event listeners
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
@@ -627,6 +762,12 @@ function drawWaveFlash() {
 
         document.addEventListener('keyup', (e) => {
             keys[e.code] = false;
+        });
+
+        // Update gyroscope sensitivity slider
+        document.getElementById('gyroSensitivity').addEventListener('input', function() {
+            gyroscopeSensitivity = parseInt(this.value);
+            document.getElementById('gyroSensitivityValue').innerText = gyroscopeSensitivity;
         });
 
         // Mobile controls setup
@@ -645,6 +786,11 @@ function drawWaveFlash() {
                     e.preventDefault();
                     touchControls[btn.control] = true;
                     initAudio(); // Initialize audio on first touch
+                    
+                    // Haptic feedback for button press
+                    if (hapticEnabled) {
+                        triggerHaptic([20]);
+                    }
                 });
 
                 element.addEventListener('touchend', (e) => {
@@ -660,34 +806,28 @@ function drawWaveFlash() {
             
             gameRunning = true;
             gamePaused = false;
+            gameTime = 0;
+            powerUpsCollected = 0;
             initAudio();
             initStars();
             resetGame();
+            
+            // Initialize gyroscope if enabled
+            if (gyroscopeEnabled) {
+                initGyroscope();
+                document.getElementById('gyroIndicator').style.display = 'block';
+            }
+            
             gameLoop();
         }
-        let upgrades = {
-    fireRate: 1,
-    speed: 1,
-    power: 1,
-};
-    //Upgrade System (Simple)
-function showUpgradeMenu() {
-    // DOM or modal menu to let user spend points
-    upgrades.fireRate += 0.5;
-    upgrades.power += 1;
-}
-
-function applyUpgrades() {
-    bulletSpeed += upgrades.fireRate;
-    shipSpeed += upgrades.speed;
-    bulletDamage = upgrades.power;
-}
 
         function backToMenu() {
             gameRunning = false;
             gamePaused = false;
             document.getElementById('gameContainer').style.display = 'none';
             document.getElementById('frontPage').style.display = 'flex';
+            document.getElementById('gyroIndicator').style.display = 'none';
+            stopGyroscope();
             closeAllModals();
         }
 
@@ -697,6 +837,8 @@ function applyUpgrades() {
             health = 100;
             energy = 100;
             enemiesKilled = 0;
+            gameTime = 0;
+            powerUpsCollected = 0;
             enemySpeed = 1 * difficulty;
             enemySpawnRate = 0.015 * difficulty;
             
@@ -728,6 +870,13 @@ function applyUpgrades() {
             
             bullets.push(bullet);
             playSound(special ? 300 : 800, 0.1, 'sawtooth', 0.05);
+            
+            // Haptic feedback for shooting
+            if (special) {
+                triggerHaptic([30]);
+            } else {
+                hapticShoot();
+            }
         }
 
         function createEnemy() {
@@ -798,13 +947,15 @@ function applyUpgrades() {
         }
 
         function updatePlayer() {
-            // Movement
+            // Movement (keyboard and touch controls)
             if ((keys['ArrowLeft'] || touchControls.left) && player.x > 0) {
                 player.x -= player.speed;
             }
             if ((keys['ArrowRight'] || touchControls.right) && player.x < canvas.width - player.width) {
                 player.x += player.speed;
             }
+
+            // Note: Gyroscope movement is handled in handleOrientation function
 
             // Shooting
             const canShoot = player.rapidFire ? touchControls.shootCooldown <= 0 : (bullets.filter(b => !b.special).length < 3);
@@ -860,35 +1011,17 @@ function applyUpgrades() {
                 }
             }
         }
-     function spawnEnemy() {
-    let type = Math.random() < 0.7 ? "normal" : "zigzag";
-    let enemy = {
-        x: Math.random() * (canvas.width - 30),
-        y: -30,
-        width: 30,
-        height: 30,
-        speed: 2 + Math.random(),
-        type,
-        zigzagDirection: Math.random() < 0.5 ? -1 : 1
-    };
-    enemies.push(enemy);
-}
 
-function updateEnemies() {
-    enemies.forEach((enemy, i) => {
-        if (enemy.type === "zigzag") {
-            enemy.x += 2 * enemy.zigzagDirection;
-            if (enemy.x < 0 || enemy.x + enemy.width > canvas.width) {
-                enemy.zigzagDirection *= -1;
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                enemy.y += enemy.speed;
+                
+                if (enemy.y > canvas.height) {
+                    enemies.splice(i, 1);
+                }
             }
         }
-        enemy.y += enemy.speed;
-
-        // collision etc...
-    });
-}
-
-
 
         function updatePowerups() {
             for (let i = powerups.length - 1; i >= 0; i--) {
@@ -947,6 +1080,7 @@ function updateEnemies() {
                             enemiesKilled++;
                             
                             playSound(150, 0.2, 'sawtooth', 0.1);
+                            hapticEnemyKill(); // Haptic feedback for enemy kill
                             enemies.splice(j, 1);
                             
                             // Level progression
@@ -955,44 +1089,8 @@ function updateEnemies() {
                                 enemySpeed += 0.3;
                                 enemySpawnRate += 0.003;
                                 playSound(500, 1, 'sine', 0.2); // Level up sound
+                                triggerHaptic([100, 50, 100, 50, 100]); // Level up haptic
                             }
-
-            let timeSlowActive = false;
-
-
-            let comboCounter = 0;
-let comboTimer = 0;
-
-function updateCombo(kill) {
-    if (kill) {
-        comboCounter++;
-        comboTimer = 100;
-        if (comboCounter >= 3) {
-            score += comboCounter * 100;
-            addMessage(`🔥 Combo x${comboCounter}! +${comboCounter * 100} pts`, 80);
-        }
-    } else if (comboTimer > 0) {
-        comboTimer--;
-    } else {
-        comboCounter = 0;
-    }
-}
-
-            function activateTimeSlow() {
-                timeSlowActive = true;
-                gameSpeed = 0.4;
-                setTimeout(() => {
-                    timeSlowActive = false;
-                    gameSpeed = 1;
-                }, 5000);
-            }
-                function drawTimeSlowOverlay() {
-    if (timeSlowActive) {
-        ctx.fillStyle = "rgba(0, 100, 255, 0.1)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-}
-
                         }
                         break;
                     }
@@ -1024,6 +1122,8 @@ function updateCombo(kill) {
                     applyPowerup(powerups[i].type);
                     createParticles(powerups[i].x, powerups[i].y, 10, '#00ff00');
                     playSound(1000, 0.3, 'sine', 0.15);
+                    hapticPowerup(); // Haptic feedback for powerup
+                    powerUpsCollected++;
                     powerups.splice(i, 1);
                 }
             }
@@ -1035,11 +1135,13 @@ function updateCombo(kill) {
             player.invulnerableTime = 60;
             
             playSound(100, 0.5, 'sawtooth', 0.2);
+            hapticDamage(); // Strong haptic feedback for damage
             
             if (health <= 0) {
                 gameOver();
             }
         }
+
         function applyPowerup(type) {
             switch(type) {
                 case 'shield':
@@ -1060,92 +1162,7 @@ function updateCombo(kill) {
                     break;
             }
         }
-            function applyPowerUp(type) {
-    activePowerUps.push(type);
 
-    if (activePowerUps.includes("shield") && activePowerUps.includes("rapid")) {
-        activateOmegaMode();
-    }
-}
-        
-
-let powerupStates = {
-    doubleFire: false,
-    shield: false,
-    slowMo: false,
-};
-
-function activatePowerup(type) {
-    if (type === "double") {
-        powerupStates.doubleFire = true;
-        fireRate = 100;
-    } else if (type === "shield") {
-        powerupStates.shield = true;
-    } else if (type === "slow") {
-        timeSlowActive = true;
-        gameSpeed = 0.5;
-        setTimeout(() => {
-            timeSlowActive = false;
-            gameSpeed = 2;
-        }, 5000);
-    }
-}
-
-let missions = [
-    { desc: "Destroy 20 enemies", type: "kills", target: 20, progress: 0, complete: false },
-    { desc: "Collect 5 powerups", type: "powerups", target: 5, progress: 0, complete: false }
-];
-
-function updateMissions(eventType) {
-    missions.forEach(mission => {
-        if (!mission.complete && mission.type === eventType) {
-            mission.progress++;
-            if (mission.progress >= mission.target) {
-                mission.complete = true;
-                addMessage(`Mission Complete: ${mission.desc}`, 100);
-                score += 1000;
-            }
-        }
-    });
-}
-
-function drawMissions() {
-    let y = 10;
-    ctx.font = "14px Orbitron";
-    ctx.fillStyle = "#fff";
-    missions.forEach(m => {
-        let text = m.complete ? "✔️ " + m.desc : `${m.desc} (${m.progress}/${m.target})`;
-        ctx.fillText(text, 10, y);
-        y += 20;
-    });
-}
-
-let messages = [];
-
-function addMessage(text, duration = 60) {
-    messages.push({ text, timer: duration });
-}
-
-function drawMessages() {
-    ctx.font = "20px Orbitron";
-    ctx.fillStyle = "#fff";
-    messages.forEach((msg, index) => {
-        ctx.globalAlpha = Math.min(1, msg.timer / 60);
-        ctx.fillText(msg.text, canvas.width / 2 - ctx.measureText(msg.text).width / 2, 100 + index * 30);
-        ctx.globalAlpha = 1;
-    });
-    messages = messages.filter(m => m.timer-- > 0);
-}
-
-
-
-function activateOmegaMode() {
-    console.log("Omega Mode Activated!");
-    // Flash effect, invincibility + rapid fire
-    setTimeout(() => {
-        activePowerUps = [];
-    }, 7000);
-}
         function updateUI() {
             document.getElementById('score').innerText = score;
             document.getElementById('level').innerText = level;
@@ -1160,96 +1177,136 @@ function activateOmegaMode() {
             }
         }
 
-        function drawBackground() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function drawPlayer() {
+            if (player.invulnerable && Math.floor(Date.now() / 100) % 2) return; // Flashing effect when invulnerable
 
-            for (let star of stars) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+            ctx.save();
+            
+            // Shield effect
+            if (player.shield) {
+                ctx.globalCompositeOperation = "lighter";
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#00ffff";
+                ctx.strokeStyle = "#00ffff";
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2 + 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Engine glow
+            ctx.globalCompositeOperation = "lighter";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00ccff";
+            ctx.fillStyle = "#00ccff";
+            ctx.fillRect(player.x + 20, player.y + player.height, 10, 15);
+            
+            ctx.restore();
+
+            // Ship - use image if loaded, fallback to rectangle
+            if (playerImg.complete && playerImg.naturalWidth > 0) {
+                ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = "#00aaff";
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                
+                // Ship details
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(player.x + 22, player.y + 15, 6, 6);
             }
         }
 
-       function drawPlayer() {
-    if (playerImg.complete) {
-        // Engine glow
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#00ccff";
-        ctx.fillStyle = "#00ccff";
-        ctx.fillRect(player.x + 20, player.y + player.height, 10, 15);
-        ctx.restore();
-
-        // Ship
-        ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
-    }
-}
-
-
-
-       function drawBullets() {
-    for (let bullet of bullets) {
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = bullet.special ? '#ffff66' : '#00ffff';
-        ctx.fillStyle = bullet.special ? '#ffff00' : '#00fffc';
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        ctx.restore();
-    }
-}
-
-       function drawEnemies() {
-    for (let enemy of enemies) {
-        if (enemyImg.complete) {
-            ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
+        function drawBullets() {
+            for (let bullet of bullets) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = bullet.special ? '#ffff66' : '#00ffff';
+                ctx.fillStyle = bullet.special ? '#ffff00' : '#00fffc';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.restore();
+            }
         }
-    }
-}
 
+        function drawEnemies() {
+            for (let enemy of enemies) {
+                // Enemy - use image if loaded, fallback to rectangle
+                if (enemyImg.complete && enemyImg.naturalWidth > 0) {
+                    ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
+                } else {
+                    ctx.fillStyle = enemy.color || '#ff4444';
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // Enemy details
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(enemy.x + enemy.width/2 - 3, enemy.y + 10, 6, 6);
+                }
+                
+                // Health bar for heavy enemies
+                if (enemy.type === 'heavy' && enemy.health < enemy.maxHealth) {
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(enemy.x, enemy.y - 8, enemy.width, 4);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(enemy.x, enemy.y - 8, enemy.width * (enemy.health / enemy.maxHealth), 4);
+                }
+            }
+        }
 
         function drawPowerups() {
-    for (let powerup of powerups) {
-        ctx.save();
-        ctx.translate(powerup.x + powerup.width / 2, powerup.y + powerup.height / 2);
-        ctx.rotate(powerup.rotation);
-        ctx.globalAlpha = 0.9;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ffaa00";
-        ctx.fillStyle = "#ffaa00";
-        ctx.beginPath();
-        ctx.arc(0, 0, powerup.width / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-}
+            for (let powerup of powerups) {
+                ctx.save();
+                ctx.translate(powerup.x + powerup.width / 2, powerup.y + powerup.height / 2);
+                ctx.rotate(powerup.rotation);
+                ctx.globalAlpha = 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#ffaa00";
+                ctx.fillStyle = "#ffaa00";
+                ctx.beginPath();
+                ctx.arc(0, 0, powerup.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Powerup type indicator
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                const symbol = {
+                    'shield': '🛡️',
+                    'rapidFire': '⚡',
+                    'health': '💊',
+                    'energy': '🔋'
+                }[powerup.type] || '?';
+                ctx.fillText(symbol, 0, 4);
+                
+                ctx.restore();
+            }
+        }
 
-
-     function drawParticles() {
-    for (let particle of particles) {
-        ctx.save();
-        ctx.globalAlpha = particle.life;
-        ctx.fillStyle = particle.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = particle.color;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-    ctx.globalAlpha = 1;
-}
-
+        function drawParticles() {
+            for (let particle of particles) {
+                ctx.save();
+                ctx.globalAlpha = particle.life;
+                ctx.fillStyle = particle.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.globalAlpha = 1;
+        }
 
         function gameOver() {
             gameRunning = false;
+            stopGyroscope();
+            document.getElementById('gyroIndicator').style.display = 'none';
             document.getElementById('finalScore').innerText = score;
             document.getElementById('finalLevel').innerText = level;
             document.getElementById('enemiesKilled').innerText = enemiesKilled;
             document.getElementById('gameOverModal').style.display = 'block';
+            
+            // Final haptic feedback
+            triggerHaptic([500, 200, 500]);
         }
 
         function togglePause() {
@@ -1286,58 +1343,31 @@ function activateOmegaMode() {
             document.getElementById('soundToggle').innerText = soundEnabled ? 'ON' : 'OFF';
         }
 
-        function updateDifficulty() {
-    difficultyTimer++;
-
-    if (difficultyTimer % 600 === 0) { // every 10 seconds
-        enemySpawnRate = Math.max(200, enemySpawnRate - 50); // spawn faster
-        gameSpeed += 0.1; // enemies move faster
-        addMessage(`Difficulty increased!`, 80);
-    }
-}
+        function toggleDifficulty() {
+            const difficulties = [0.5, 1, 1.5];
+            const names = ['EASY', 'NORMAL', 'HARD'];
+            const currentIndex = difficulties.indexOf(difficulty);
+            const nextIndex = (currentIndex + 1) % difficulties.length;
+            
+            difficulty = difficulties[nextIndex];
+            document.getElementById('difficultyBtn').innerText = names[nextIndex];
+        }
 
         function restartGame() {
             document.getElementById('gameOverModal').style.display = 'none';
             startGame();
         }
 
-        function showGameOverScreen() {
-    ctx.fillStyle = "rgba(0,0,0,0.8)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.fillStyle = "#fff";
-    ctx.font = "28px Orbitron";
-    ctx.fillText("💀 GAME OVER 💀", canvas.width / 2 - 120, canvas.height / 2 - 80);
-    
-    ctx.font = "20px Orbitron";
-    ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 80, canvas.height / 2 - 40);
-    ctx.fillText(`Wave Reached: ${currentWave}`, canvas.width / 2 - 95, canvas.height / 2 - 10);
-    
-    missions.forEach((m, i) => {
-        ctx.fillText(`${m.complete ? "✔️" : "❌"} ${m.desc}`, canvas.width / 2 - 100, canvas.height / 2 + 30 + i * 25);
-    });
-
-    ctx.fillText("Press R to Restart", canvas.width / 2 - 90, canvas.height / 2 + 110);
-}
-
-
-
         function closeAllModals() {
             document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
         }
-        if (wave % 5 === 0 && !bossActive && !boss) {
-    spawnBoss();
-}
-if (bossActive) {
-    updateBoss();
-    drawBoss(ctx);
-}
 
         function gameLoop() {
             if (!gameRunning || gamePaused) return;
 
             requestAnimationFrame(gameLoop);
             
+            gameTime++;
             updateStars();
             updatePlayer();
             updateBullets();
@@ -1348,28 +1378,17 @@ if (bossActive) {
             updateUI();
 
             drawBackground();
-            
             drawBullets();
             drawEnemies();
             drawPowerups();
             drawParticles();
             drawPlayer();
-            drawMissions();
-            drawMessages();
-            drawWaveFlash();
             
             if (Math.random() < enemySpawnRate) {
                 createEnemy();
             }
         }
-        if (gameOver) {
-        showGameOverScreen();
-    } else {
-        requestAnimationFrame(gameLoop);
-    }
-        setupMobileControls();
+
     </script>
 </body>
 </html>
-
-       
