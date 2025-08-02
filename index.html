@@ -561,8 +561,17 @@
 
         // Haptic feedback functions
         function triggerHaptic(pattern = [100]) {
-            if (hapticEnabled && navigator.vibrate) {
-                navigator.vibrate(pattern);
+            if (!hapticEnabled) return;
+            
+            try {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(pattern);
+                    console.log('Haptic feedback triggered:', pattern);
+                } else {
+                    console.log('Vibration API not supported');
+                }
+            } catch (error) {
+                console.error('Haptic feedback error:', error);
             }
         }
 
@@ -584,9 +593,14 @@
 
         // Gyroscope functions
         async function requestGyroscopePermission() {
+            console.log('Requesting gyroscope permission...');
+            
+            // Check if we're on iOS 13+ which requires permission
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
+                    console.log('iOS device detected, requesting permission...');
                     const permission = await DeviceOrientationEvent.requestPermission();
+                    console.log('Permission result:', permission);
                     deviceOrientationPermission = permission === 'granted';
                     return deviceOrientationPermission;
                 } catch (error) {
@@ -594,7 +608,8 @@
                     return false;
                 }
             } else {
-                // For non-iOS devices, assume permission is granted
+                // For non-iOS devices or older iOS versions
+                console.log('Non-iOS device or older iOS, assuming permission granted');
                 deviceOrientationPermission = true;
                 return true;
             }
@@ -602,11 +617,22 @@
 
         function initGyroscope() {
             if (!gyroscopeEnabled) return;
+            
+            console.log('Initializing gyroscope...');
 
-            if (window.DeviceOrientationEvent) {
+            if ('DeviceOrientationEvent' in window) {
+                console.log('DeviceOrientationEvent supported');
                 window.addEventListener('deviceorientation', handleOrientation, true);
+                
+                // Test event to see if we get data
+                setTimeout(() => {
+                    if (!gyroscopeData.hasData) {
+                        console.log('No gyroscope data received after 2 seconds');
+                    }
+                }, 2000);
             } else {
-                console.log('Device orientation not supported');
+                console.log('DeviceOrientationEvent not supported');
+                alert('Gyroscope not supported on this device');
             }
         }
 
@@ -617,11 +643,17 @@
             const tiltLR = event.gamma; // Left-right tilt in degrees [-90, 90]
             const tiltFB = event.beta;  // Front-back tilt in degrees [-180, 180]
 
+            // Mark that we're receiving data
+            if (!gyroscopeData.hasData && (tiltLR !== null || tiltFB !== null)) {
+                gyroscopeData.hasData = true;
+                console.log('Gyroscope data received:', { gamma: tiltLR, beta: tiltFB });
+            }
+
             // Use left-right tilt for ship movement
-            if (tiltLR !== null) {
-                // Normalize and apply sensitivity
-                const normalizedTilt = tiltLR / 45; // Normalize to [-2, 2] range
-                const movement = normalizedTilt * (gyroscopeSensitivity / 5) * player.speed;
+            if (tiltLR !== null && tiltLR !== undefined) {
+                // Normalize and apply sensitivity (more responsive)
+                const normalizedTilt = Math.max(-1, Math.min(1, tiltLR / 30)); // Normalize to [-1, 1] range using 30 degrees
+                const movement = normalizedTilt * (gyroscopeSensitivity / 5) * player.speed * 1.5; // Increased responsiveness
                 
                 // Apply movement with bounds checking
                 const newX = player.x + movement;
@@ -632,25 +664,36 @@
         }
 
         function stopGyroscope() {
+            console.log('Stopping gyroscope...');
             window.removeEventListener('deviceorientation', handleOrientation, true);
+            gyroscopeData.hasData = false;
         }
 
         async function toggleGyroscope() {
+            console.log('Toggling gyroscope, current state:', gyroscopeEnabled);
+            
             if (!gyroscopeEnabled) {
+                // Test haptic feedback first to ensure user interaction
+                triggerHaptic([50]);
+                
                 const permitted = await requestGyroscopePermission();
                 if (permitted) {
                     gyroscopeEnabled = true;
+                    gyroscopeData = { hasData: false }; // Reset data flag
                     initGyroscope();
                     document.getElementById('gyroToggle').innerText = 'ON';
                     document.getElementById('gyroIndicator').style.display = 'block';
+                    console.log('Gyroscope enabled successfully');
                 } else {
-                    alert('Gyroscope permission denied. Please enable it in your browser settings.');
+                    console.log('Gyroscope permission denied');
+                    alert('Gyroscope permission denied. Please enable it in your browser settings or try refreshing the page.');
                 }
             } else {
                 gyroscopeEnabled = false;
                 stopGyroscope();
                 document.getElementById('gyroToggle').innerText = 'OFF';
                 document.getElementById('gyroIndicator').style.display = 'none';
+                console.log('Gyroscope disabled');
             }
         }
 
@@ -660,7 +703,8 @@
             
             // Test haptic feedback
             if (hapticEnabled) {
-                triggerHaptic([50]);
+                console.log('Testing haptic feedback...');
+                triggerHaptic([100]);
             }
         }
 
